@@ -10,6 +10,9 @@ It will then escalate privileges to provide an Admin shell and execute **win10xp
 2. Exclude the build directory from Windows Defender scanning
 3. Download the current release of Win10XPE
 4. Extract the Win10XPE files to C:\Win10XPE_Build_Area\Win10XPE
+5. Download Windows 10 Professional v20H1 ISO
+6. Extract ISO
+7. Create install.wim from install.esd
 
 Once deployed you can begin using [Win10XPE](https://github.com/ChrisRfr/Win10XPE) by using File Explorer to navigate to C:\Win10XPE_Build_Area and double-click **deploy.cmd**.
 
