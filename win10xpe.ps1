@@ -58,14 +58,20 @@ $tempFilePath = "$env:TEMP\$($filePath | Split-Path -Leaf)"
 Remove-Item -Path $filePath
 Move-Item -Path $tempFilePath -Destination $filePath
 
+# Add Custom Win10XPE Scripts
+Write-Host -NoNewLine "Downloading custom Win10XPE scripts... "
+New-Item -ItemType Directory -Path "$buildDir\Win10XPE\Projects\MyPlugins\Apps\Disk Encryption" | Out-Null
+$ProgressPreference = 'SilentlyContinue'
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/wdouglascampbell/win10xpe-bcrypt-script/main/bcve.script -Outfile "$buildDir\Win10XPE\Projects\MyPlugins\Apps\Disk Encryption\bcve.script"
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/wdouglascampbell/win10xpe-veracrypt-script/main/VeraCrypt.script -Outfile "$buildDir\Win10XPE\Projects\MyPlugins\Apps\Disk Encryption\VeraCrypt.script"
+$ProgressPreference = 'Continue'
+Write-Host "Done"
+
 # Remove Win10XPE Archive and Extracted Files
 Write-Host -NoNewLine "Removing Win10XPE archive and extracted files... "
 Remove-Item "$buildDir\Win10XPE-$releaseTag" -Recurse
 Remove-Item "$buildDir\Win10XPE-$releaseTag.zip"
 Write-Host "Done"
-
-# Done
-Write-Host "Win10XPE installation is complete."
 
 # Check if Win10Pro_v20H1 source files directory exists
 if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
@@ -81,20 +87,20 @@ if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
   $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
 
   # Use MediaCreationTool.bat to retrieve Windows 10 20H1 ISO image
-  Write-Host -NoNewLine "Downloading Windows 10 20H1 Iso Image... "
+  Write-Host -NoNewLine "`n`nDownloading Windows 10 20H1 ISO Image... "
   Start-Process -FilePath '.\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat' -Wait
   Remove-Item "C:\ESD" -Recurse
   Remove-Item "$buildDir\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat"
   Write-Host "Done"
 
   # Extract ISO image files
-  Write-Host -NoNewLine "Extracting Files from Windows 10 20H1 Iso Image... "
+  Write-Host -NoNewLine "Extracting Files from Windows 10 20H1 ISO Image... "
   $isoPath="$buildDir\10 20H1 Professional x64 en-US.iso"
   $destFolder="$buildDir\Win10Pro_v20H1"
   $driveLetter=(Mount-DiskImage -ImagePath $isoPath | Get-Volume).DriveLetter
-  New-Item -ItemType Directory -Path $destFolder
-  Copy-Item -Path $(($driveLetter,":\*") -join "") -Destination $destFolder -Recurse -Passthru
-  Dismount-DiskImage -ImagePath $isoPath
+  New-Item -ItemType Directory -Path $destFolder | Out-Null
+  Copy-Item -Path $(($driveLetter,":\*") -join "") -Destination $destFolder -Recurse
+  Dismount-DiskImage -ImagePath $isoPath | Out-Null
   Write-Host "Done"
 
   # Remove ISO image
@@ -103,8 +109,8 @@ if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
   # Export install.wim for Windows 10 Professional from install.esd
   Write-Host -NoNewLine "Exporting install.wim from install.esd... "
   Set-Location "$buildDir\Win10Pro_v20H1\sources"
-  Export-WindowsImage -SourceImagePath "install.esd" -SourceIndex 6 -DestinationImagePath "install.wim" -CheckIntegrity
-  Remove-Item "$buildDir\Win10Pro_v20H1\sources\install.esd" -Force
+  Export-WindowsImage -SourceImagePath "install.esd" -SourceIndex 6 -DestinationImagePath "install.wim" -CheckIntegrity | Out-Null
+  Remove-Item "$buildDir\Win10Pro_v20H1\sources\install.esd" -Force | Out-Null
   Write-Host "Done"
 }
 
