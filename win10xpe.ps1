@@ -51,12 +51,12 @@ Write-Host "Done"
 # Extract Win10XPE
 Expand-7Zip -ArchiveFileName "$buildDir\Win10XPE-$releaseTag\Win10XPE_2023-02-01.7z.001" -TargetPath "$buildDir"
 
-# Apply fixes to Win10XPE
-$filePath = "$buildDir\Win10XPE\Projects\Win10XPE\Core.script"
-$tempFilePath = "$env:TEMP\$($filePath | Split-Path -Leaf)"
-(Get-Content -Path $filePath) -replace '10.0.19041.264', '10.0.19041.572' | Add-Content -Path $tempFilePath
-Remove-Item -Path $filePath
-Move-Item -Path $tempFilePath -Destination $filePath
+## Apply fixes to Win10XPE
+#$filePath = "$buildDir\Win10XPE\Projects\Win10XPE\Core.script"
+#$tempFilePath = "$env:TEMP\$($filePath | Split-Path -Leaf)"
+#(Get-Content -Path $filePath) -replace '10.0.19041.264', '10.0.19041.572' | Add-Content -Path $tempFilePath
+#Remove-Item -Path $filePath
+#Move-Item -Path $tempFilePath -Destination $filePath
 
 # Add Custom Win10XPE Scripts
 Write-Host -NoNewLine "Downloading custom Win10XPE scripts... "
@@ -75,27 +75,60 @@ Write-Host "Done"
 
 # Check if Win10Pro_v20H1 source files directory exists
 if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
-  # Download MediaCreationTool.bat
-  Write-Host -NoNewLine "Downloading MediaCreationTool.bat... "
-  Set-Location "$buildDir"
-  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/AveYo/MediaCreationTool.bat/main/MediaCreationTool.bat" -OutFile "$buildDir\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat"
+#  # Download MediaCreationTool.bat
+#  Write-Host -NoNewLine "Downloading MediaCreationTool.bat... "
+#  Set-Location "$buildDir"
+#  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/AveYo/MediaCreationTool.bat/main/MediaCreationTool.bat" -OutFile "$buildDir\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat"
+#  Write-Host "Done"
+#  Write-Host "`nThe Media Creation Tool will now be run to download the ISO image.  When it"
+#  Write-Host "finishes you will need to click the Finish button to continue with the"
+#  Write-Host "installation."
+#  Write-Host -NoNewLine 'Press any key to begin download...';
+#  $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
+#
+#  # Use MediaCreationTool.bat to retrieve Windows 10 20H1 ISO image
+#  Write-Host -NoNewLine "`n`nDownloading Windows 10 20H1 ISO Image... "
+#  Start-Process -FilePath '.\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat' -Wait
+#  Remove-Item "C:\ESD" -Recurse
+#  Remove-Item "$buildDir\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat"
+#  Write-Host "Done"
+#
+#  # Extract ISO image files
+#  Write-Host -NoNewLine "Extracting Files from Windows 10 20H1 ISO Image... "
+#  $isoPath="$buildDir\10 20H1 Professional x64 en-US.iso"
+#  $destFolder="$buildDir\Win10Pro_v20H1"
+#  $driveLetter=(Mount-DiskImage -ImagePath $isoPath | Get-Volume).DriveLetter
+#  New-Item -ItemType Directory -Path $destFolder | Out-Null
+#  Copy-Item -Path $(($driveLetter,":\*") -join "") -Destination $destFolder -Recurse
+#  Dismount-DiskImage -ImagePath $isoPath | Out-Null
+#  Write-Host "Done"
+#
+#  # Remove ISO image
+#  Remove-Item "$isoPath"
+#  
+#  # Export install.wim for Windows 10 Professional from install.esd
+#  Write-Host -NoNewLine "Exporting install.wim from install.esd... "
+#  Set-Location "$buildDir\Win10Pro_v20H1\sources"
+#  Export-WindowsImage -SourceImagePath "install.esd" -SourceIndex 6 -DestinationImagePath "install.wim" -CheckIntegrity | Out-Null
+#  Remove-Item "$buildDir\Win10Pro_v20H1\sources\install.esd" -Force | Out-Null
+#  Write-Host "Done"
+  # Extract uupdump_convert script archive
+  Write-Host -NoNewLine "Extracting UUP Dump scripts from archive... "
+  Expand-Archive -path "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert.zip" -DestinationPath "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert"
   Write-Host "Done"
-  Write-Host "`nThe Media Creation Tool will now be run to download the ISO image.  When it"
-  Write-Host "finishes you will need to click the Finish button to continue with the"
-  Write-Host "installation."
-  Write-Host -NoNewLine 'Press any key to begin download...';
-  $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
-
-  # Use MediaCreationTool.bat to retrieve Windows 10 20H1 ISO image
-  Write-Host -NoNewLine "`n`nDownloading Windows 10 20H1 ISO Image... "
-  Start-Process -FilePath '.\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat' -Wait
-  Remove-Item "C:\ESD" -Recurse
-  Remove-Item "$buildDir\pro iso 20H1 en-US x64 no_update def MediaCreationTool.bat"
-  Write-Host "Done"
-
+  
+  # Run UUP Dump Scripts
+  Write-Host "Running UUP Dump scripts... "
+  Start-Process -FilePath "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert\uup_download_windows.cmd" -Wait
+  if (-Not (Test-Path -Path "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert\19041.1.191206-1406.VB_RELEASE_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO" -PathType Leaf)) {
+    Write-Error "There was an issue creating the Windows ISO image.  Please retry again later."
+    Write-Host "Exiting..."
+    Exit 1
+  }
+  
   # Extract ISO image files
   Write-Host -NoNewLine "Extracting Files from Windows 10 20H1 ISO Image... "
-  $isoPath="$buildDir\10 20H1 Professional x64 en-US.iso"
+  $isoPath="$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert\19041.1.191206-1406.VB_RELEASE_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO"
   $destFolder="$buildDir\Win10Pro_v20H1"
   $driveLetter=(Mount-DiskImage -ImagePath $isoPath | Get-Volume).DriveLetter
   New-Item -ItemType Directory -Path $destFolder | Out-Null
@@ -103,15 +136,8 @@ if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
   Dismount-DiskImage -ImagePath $isoPath | Out-Null
   Write-Host "Done"
 
-  # Remove ISO image
-  Remove-Item "$isoPath"
-  
-  # Export install.wim for Windows 10 Professional from install.esd
-  Write-Host -NoNewLine "Exporting install.wim from install.esd... "
-  Set-Location "$buildDir\Win10Pro_v20H1\sources"
-  Export-WindowsImage -SourceImagePath "install.esd" -SourceIndex 6 -DestinationImagePath "install.wim" -CheckIntegrity | Out-Null
-  Remove-Item "$buildDir\Win10Pro_v20H1\sources\install.esd" -Force | Out-Null
-  Write-Host "Done"
+  # Remove UUP Dump Scripts and Windows 10 20h1 ISO Image
+  Remove-Item -Path "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert" -Recurse
 }
 
 Write-Host -NoNewLine 'Press any key to continue...';
