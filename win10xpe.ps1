@@ -16,11 +16,11 @@ Clear-Host
 if (Test-Path -Path "$buildDir\Win10XPE") {
   Write-Warning "The Win10XPE directory exists."
   Write-Warning "All previous content will be removed." -WarningAction Inquire
-  Remove-Item "$buildDir" -Recurse
+  Remove-Item "$buildDir\Win10XPE" -Recurse
 }
 
 # Create directory for Win10XPE build area
-New-Item -ItemType Directory -Path "$buildDir" | Out-Null
+New-Item -ItemType Directory -Path "$buildDir" -Force | Out-Null
 
 # Exclude Win10XPE build area directory from Windows Defender scanning
 Add-MpPreference -ExclusionPath "$buildDir"
@@ -114,13 +114,13 @@ if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
 #  Write-Host "Done"
   # Extract uupdump_convert script archive
   Write-Host -NoNewLine "Extracting UUP Dump scripts from archive... "
-  Expand-Archive -path "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert.zip" -DestinationPath "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert"
+  Expand-Archive -path "$PSScriptRoot\19041.264_amd64_en-us_professional_a52370fd_convert.zip" -DestinationPath "$PSScriptRoot\19041.264_amd64_en-us_professional_a52370fd_convert"
   Write-Host "Done"
   
   # Run UUP Dump Scripts
   Write-Host "Running UUP Dump scripts... "
-  Start-Process -FilePath "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert\uup_download_windows.cmd" -Wait
-  if (-Not (Test-Path -Path "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert\19041.1.191206-1406.VB_RELEASE_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO" -PathType Leaf)) {
+  Start-Process -FilePath "$PSScriptRoot\19041.264_amd64_en-us_professional_a52370fd_convert\uup_download_windows.cmd" -Wait
+  if (-Not (Test-Path -Path "$PSScriptRoot\19041.264_amd64_en-us_professional_a52370fd_convert\19041.1.191206-1406.VB_RELEASE_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO" -PathType Leaf)) {
     Write-Error "There was an issue creating the Windows ISO image.  Please retry again later."
     Write-Host "Exiting..."
     Exit 1
@@ -128,7 +128,7 @@ if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
   
   # Extract ISO image files
   Write-Host -NoNewLine "Extracting Files from Windows 10 20H1 ISO Image... "
-  $isoPath="$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert\19041.1.191206-1406.VB_RELEASE_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO"
+  $isoPath="$PSScriptRoot\19041.264_amd64_en-us_professional_a52370fd_convert\19041.1.191206-1406.VB_RELEASE_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO"
   $destFolder="$buildDir\Win10Pro_v20H1"
   $driveLetter=(Mount-DiskImage -ImagePath $isoPath | Get-Volume).DriveLetter
   New-Item -ItemType Directory -Path $destFolder | Out-Null
@@ -137,7 +137,7 @@ if (-Not (Test-Path -Path "$buildDir\Win10Pro_v20H1")) {
   Write-Host "Done"
 
   # Remove UUP Dump Scripts and Windows 10 20h1 ISO Image
-  Remove-Item -Path "$buildDir\19041.264_amd64_en-us_professional_a52370fd_convert" -Recurse
+  Remove-Item -Path "$PSScriptRoot\19041.264_amd64_en-us_professional_a52370fd_convert" -Recurse
 }
 
 Write-Host -NoNewLine 'Press any key to continue...';
